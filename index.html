@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gündoğdu Ekstre Sadeleştirici</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #071223;
+    --surface: #0D1F3C;
+    --card:    #112244;
+    --border:  #1E3A6E;
+    --accent:  #FFB300;
+    --blue:    #1E88E5;
+    --text:    #FFFFFF;
+    --muted:   #8BA3C7;
+    --success: #00C853;
+    --danger:  #FF1744;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 16px; color: #000;
+  }
+
+  .logo-text { font-size: 18px; font-weight: 800; }
+  .logo-sub  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  .credit-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 16px;
+  }
+
+  .credit-label { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  .credit-count { font-size: 24px; font-weight: 800; color: var(--accent); line-height: 1; }
+
+  /* MAIN */
+  main { flex: 1; padding: 32px 24px; max-width: 800px; margin: 0 auto; width: 100%; }
+
+  .hero-title {
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .hero-sub {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .gold-line {
+    width: 60px; height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 0 auto 28px;
+  }
+
+  /* İKONLAR */
+  .icons-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .icon-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+    min-width: 90px;
+    flex: 1;
+    max-width: 130px;
+    transition: border-color .2s;
+  }
+  .icon-card:hover { border-color: var(--accent); }
+  .icon-card .ico { font-size: 24px; margin-bottom: 6px; }
+  .icon-card .lbl { font-size: 10px; color: var(--muted); font-weight: 500; }
+
+  /* UPLOAD CARD */
+  .upload-card {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: 16px;
+  }
+  .upload-card:hover, .upload-card.drag { border-color: var(--accent); background: #1a2f5a; }
+  .upload-card .upload-ico { font-size: 40px; margin-bottom: 10px; }
+  .upload-card .upload-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .upload-card .upload-sub { font-size: 12px; color: var(--muted); }
+  .upload-card .file-name { color: var(--accent); font-weight: 600; margin-top: 8px; font-size: 13px; }
+
+  #fileInput { display: none; }
+
+  /* SETTINGS */
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .settings-row label { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .settings-row input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    width: 140px;
+  }
+  .settings-row input:focus { border-color: var(--accent); }
+
+  /* BUTON */
+  .btn-main {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: #000;
+    font-size: 16px;
+    font-weight: 800;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    letter-spacing: .5px;
+    transition: opacity .2s, transform .1s;
+    margin-bottom: 16px;
+  }
+  .btn-main:hover { opacity: .9; transform: translateY(-1px); }
+  .btn-main:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+  /* SONUÇ */
+  .result-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: none;
+    margin-bottom: 16px;
+  }
+  .result-box.show { display: block; }
+  .result-box.ok { border-color: var(--success); }
+  .result-box.err { border-color: var(--danger); }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .stat-item {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-item .s-val { font-size: 22px; font-weight: 800; }
+  .stat-item .s-lbl { font-size: 10px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+  .download-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--success);
+    color: #000;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: opacity .2s;
+  }
+  .download-btn:hover { opacity: .85; }
+
+  /* KİLİT MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+  }
+  .modal .m-ico { font-size: 48px; margin-bottom: 12px; }
+  .modal h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  .modal input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 15px;
+    padding: 12px 16px;
+    outline: none;
+    text-align: center;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+  }
+  .modal input:focus { border-color: var(--accent); }
+
+  .modal-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: #000;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+
+  .modal-err { color: var(--danger); font-size: 12px; margin-top: 6px; min-height: 18px; }
+  .modal-contact { font-size: 11px; color: var(--muted); margin-top: 14px; }
+
+  /* FOOTER */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .footer-left { font-size: 12px; color: var(--muted); }
+  .footer-left span { color: var(--accent); font-weight: 700; }
+  .footer-right { font-size: 11px; color: var(--muted); }
+
+  .balance-warn { color: var(--danger); font-weight: 700; font-size: 13px; }
+  .balance-ok   { color: var(--success); font-weight: 700; font-size: 13px; }
+
+  @media (max-width: 500px) {
+    main { padding: 20px 16px; }
+    .icons-row { gap: 6px; }
+    .icon-card { min-width: 70px; padding: 10px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-dot">U</div>
+    <div>
+      <div class="logo-text">UDX</div>
+      <div class="logo-sub">Gündoğdu Ekstre Sadeleştirici</div>
+    </div>
+  </div>
+  <div class="credit-badge">
+    <div>
+      <div class="credit-label">Kredi</div>
+      <div class="credit-count" id="creditCount">10</div>
+    </div>
+    <div style="font-size:22px">⚡</div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+  <h1 class="hero-title">ERP Ekstre Sadeleştirme Platformu</h1>
+  <p class="hero-sub">Cari Hesap Mutabakat &nbsp;•&nbsp; Netleştirme Analizi &nbsp;•&nbsp; Otomatik Eşleştirme</p>
+  <div class="gold-line"></div>
+
+  <!-- İkonlar -->
+  <div class="icons-row">
+    <div class="icon-card"><div class="ico">📂</div><div class="lbl">Ekstre Yükleme</div></div>
+    <div class="icon-card"><div class="ico">⚙️</div><div class="lbl">Sadeleştirme</div></div>
+    <div class="icon-card"><div class="ico">✅</div><div class="lbl">Eşleştirme</div></div>
+    <div class="icon-card"><div class="ico">📊</div><div class="lbl">Raporlama</div></div>
+    <div class="icon-card"><div class="ico">🗂</div><div class="lbl">Arşiv</div></div>
+  </div>
+
+  <!-- Dosya Yükleme -->
+  <div class="upload-card" id="dropZone" onclick="document.getElementById('fileInput').click()"
+       ondragover="event.preventDefault();this.classList.add('drag')"
+       ondragleave="this.classList.remove('drag')"
+       ondrop="handleDrop(event)">
+    <div class="upload-ico">📤</div>
+    <div class="upload-title">Excel Dosyasını Yükle</div>
+    <div class="upload-sub">Sürükle bırak veya tıkla &nbsp;(.xlsx / .xls)</div>
+    <div class="file-name" id="fileName"></div>
+  </div>
+  <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(this.files[0])">
+
+  <!-- Ayarlar -->
+  <div class="settings-row">
+    <label>⚙️ Netleştirme kelimesi:</label>
+    <input type="text" id="netKw" value="net" placeholder="net">
+  </div>
+
+  <!-- Buton -->
+  <button class="btn-main" id="runBtn" onclick="runProcess()">⚡ Sadeleştir</button>
+
+  <!-- Sonuç -->
+  <div class="result-box" id="resultBox">
+    <div id="resultTitle" style="font-size:15px;font-weight:700;margin-bottom:4px;"></div>
+    <div id="netBalance" style="font-size:13px;margin-bottom:8px;"></div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <button class="download-btn" id="downloadBtn" onclick="downloadResult()" style="display:none">
+      ⬇️ Excel İndir
+    </button>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">&lt;/&gt; Geliştirici: <span>Yunus Emre Gündoğdu</span></div>
+  <div class="footer-right">SAP &nbsp;•&nbsp; Oracle &nbsp;•&nbsp; UDX v1.0</div>
+</footer>
+
+<!-- KİLİT MODAL -->
+<div class="modal-overlay" id="lockModal">
+  <div class="modal">
+    <div class="m-ico">🔒</div>
+    <h2 style="color:var(--danger)">Krediniz Tükendi!</h2>
+    <p>Yönetici şifresini girerek 10 kredi yükleyebilirsiniz.</p>
+    <input type="password" id="pwInput" placeholder="••••••" onkeydown="if(event.key==='Enter')checkPassword()">
+    <div class="modal-err" id="pwErr"></div>
+    <button class="modal-btn" onclick="checkPassword()">🔓 Kilidi Aç</button>
+    <div class="modal-contact">Kredi almak için Yunus Emre Gündoğdu ile iletişime geçin.</div>
+  </div>
+</div>
+
+<!-- ŞİFRE KURULUM MODAL -->
+<div class="modal-overlay" id="setupModal">
+  <div class="modal">
+    <div class="m-ico">🔐</div>
+    <h2>Yönetici Şifresi Belirle</h2>
+    <p>İlk kullanım — şifreni belirle. Kredi bittiğinde bu şifre gerekecek.</p>
+    <input type="password" id="pw1" placeholder="Şifre" style="margin-bottom:8px">
+    <input type="password" id="pw2" placeholder="Şifre tekrar" onkeydown="if(event.key==='Enter')setupPassword()">
+    <div class="modal-err" id="setupErr"></div>
+    <button class="modal-btn" onclick="setupPassword()">✅ Kaydet ve Başla</button>
+  </div>
+</div>
+
+<script>
+// ── KREDİ & ŞİFRE SİSTEMİ ──────────────────────────────────────────────
+const STORAGE_KEY = 'udx_data';
+
+function loadData() {
+  try {
+    const d = localStorage.getItem(STORAGE_KEY);
+    return d ? JSON.parse(d) : null;
+  } catch { return null; }
+}
+
+function saveData(d) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+}
+
+async function hashPw(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+let appData = loadData();
+
+function init() {
+  if (!appData || !appData.pwHash) {
+    document.getElementById('setupModal').classList.add('show');
+  } else {
+    updateCreditUI();
+  }
+}
+
+async function setupPassword() {
+  const p1 = document.getElementById('pw1').value;
+  const p2 = document.getElementById('pw2').value;
+  const err = document.getElementById('setupErr');
+  if (p1.length < 4) { err.textContent = 'En az 4 karakter olmalı!'; return; }
+  if (p1 !== p2)      { err.textContent = 'Şifreler eşleşmiyor!'; return; }
+  const hash = await hashPw(p1);
+  appData = { credits: 10, pwHash: hash };
+  saveData(appData);
+  document.getElementById('setupModal').classList.remove('show');
+  updateCreditUI();
+}
+
+async function checkPassword() {
+  const pw = document.getElementById('pwInput').value;
+  const err = document.getElementById('pwErr');
+  const hash = await hashPw(pw);
+  if (hash === appData.pwHash) {
+    appData.credits += 10;
+    saveData(appData);
+    updateCreditUI();
+    document.getElementById('lockModal').classList.remove('show');
+    document.getElementById('pwInput').value = '';
+    err.textContent = '';
+    showToast('10 kredi yüklendi! ✓', 'success');
+  } else {
+    err.textContent = '❌ Yanlış şifre!';
+    document.getElementById('pwInput').value = '';
+  }
+}
+
+function updateCreditUI() {
+  const c = appData.credits;
+  const el = document.getElementById('creditCount');
+  el.textContent = c;
+  el.style.color = c > 3 ? 'var(--accent)' : 'var(--danger)';
+}
+
+// ── DOSYA İŞLEME ────────────────────────────────────────────────────────
+let workbookData = null;
+let resultData   = null;
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  handleFile(e.dataTransfer.files[0]);
+}
+
+function handleFile(file) {
+  if (!file) return;
+  document.getElementById('fileName').textContent = '📄 ' + file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    workbookData = { data: e.target.result, name: file.name };
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function runProcess() {
+  if (!workbookData) { showToast('Lütfen önce bir dosya seçin!', 'err'); return; }
+  if (!appData || appData.credits <= 0) {
+    document.getElementById('lockModal').classList.add('show');
+    return;
+  }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ İşleniyor...';
+
+  setTimeout(() => {
+    try {
+      const result = processExcel(workbookData.data, document.getElementById('netKw').value || 'net');
+      resultData = result;
+
+      // Kredi düş
+      appData.credits -= 1;
+      saveData(appData);
+      updateCreditUI();
+
+      showResult(result);
+    } catch(e) {
+      showResultError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⚡ Sadeleştir';
+    }
+  }, 100);
+}
+
+function processExcel(arrayBuffer, netKw) {
+  const wb = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+  if (rows.length === 0) throw new Error('Dosyada veri bulunamadı!');
+
+  const kw = netKw.trim().toLowerCase();
+
+  // Sütun adlarını normalize et
+  const sample = rows[0];
+  const keys = Object.keys(sample);
+  const findCol = (...terms) => keys.find(k => terms.some(t => k.toLowerCase().includes(t))) || '';
+
+  const BORC    = findCol('borç(try)', 'borc(try)','borç','borc','debit');
+  const ALACAK  = findCol('alacak(try)','alacak','credit');
+  const EVRAK   = findCol('evrak');
+  const ACIKLAMA= findCol('açıklama','aciklama','description');
+  const TARIH   = findCol('tarih','date');
+  const VADE    = findCol('vade');
+  const KYNK    = findCol('kynk','kaynak','source');
+  const PBR     = findCol('pbr','para','currency');
+
+  if (!EVRAK || !BORC || !ALACAK) throw new Error('Gerekli sütunlar bulunamadı (Evrak No, Borç, Alacak)');
+
+  const toNum = v => { const n = parseFloat(String(v).replace(/,/g,'.')); return isNaN(n) ? 0 : n; };
+  const fmtDate = v => {
+    if (!v) return '';
+    if (v instanceof Date) return v.toLocaleDateString('tr-TR');
+    return String(v);
+  };
+
+  // Netleştirme ayır
+  const netRows = rows.filter(r => String(r[ACIKLAMA]||'').toLowerCase().includes(kw));
+  const remRows = rows.filter(r => !String(r[ACIKLAMA]||'').toLowerCase().includes(kw));
+
+  const netBorc   = netRows.reduce((s,r) => s + toNum(r[BORC]), 0);
+  const netAlacak = netRows.reduce((s,r) => s + toNum(r[ALACAK]), 0);
+  const balanced  = Math.abs(netBorc - netAlacak) < 0.01;
+
+  // Evrak No'ya göre grupla
+  const groups = {};
+  const order  = [];
+  remRows.forEach(r => {
+    const key = String(r[EVRAK]||'').trim() || '__BOSSEVRAK__';
+    if (!groups[key]) { groups[key] = { rows:[], first:r }; order.push(key); }
+    groups[key].rows.push(r);
+  });
+
+  const simplified = [];
+  order.forEach(key => {
+    const g = groups[key];
+    const b = g.rows.reduce((s,r) => s + toNum(r[BORC]), 0);
+    const a = g.rows.reduce((s,r) => s + toNum(r[ALACAK]), 0);
+    const diff = b - a;
+    if (Math.abs(diff) < 0.001 && b + a > 0 && diff === 0) return; // net sıfır
+    simplified.push({
+      [TARIH]:   fmtDate(g.first[TARIH]),
+      [KYNK]:    g.first[KYNK],
+      [EVRAK]:   key === '__BOSSEVRAK__' ? '' : key,
+      [ACIKLAMA]:g.first[ACIKLAMA],
+      [VADE]:    fmtDate(g.first[VADE]),
+      [BORC]:    diff > 0 ? Math.round(diff*100)/100 : 0,
+      [ALACAK]:  diff < 0 ? Math.round(Math.abs(diff)*100)/100 : 0,
+      [PBR]:     g.first[PBR],
+      'Satır Sayısı': g.rows.length,
+      _cols: { TARIH,KYNK,EVRAK,ACIKLAMA,VADE,BORC,ALACAK,PBR },
+    });
+  });
+
+  return {
+    total: rows.length, netCount: netRows.length,
+    resultCount: simplified.length, balanced,
+    netBorc, netAlacak, simplified,
+    cols: { TARIH,KYNK,EVRAK,ACIKLAMA,VADE,BORC,ALACAK,PBR },
+    netRows,
+  };
+}
+
+function showResult(res) {
+  const box = document.getElementById('resultBox');
+  box.className = 'result-box show ' + (res.balanced ? 'ok' : 'err');
+
+  document.getElementById('resultTitle').textContent = '✅ Sadeleştirme Tamamlandı!';
+
+  const balEl = document.getElementById('netBalance');
+  balEl.innerHTML = res.balanced
+    ? `<span class="balance-ok">✓ Netleştirme Dengeli</span> — Borç: ${fmt(res.netBorc)} | Alacak: ${fmt(res.netAlacak)}`
+    : `<span class="balance-warn">⚠️ Netleştirme Dengesiz!</span> — Borç: ${fmt(res.netBorc)} | Alacak: ${fmt(res.netAlacak)}`;
+
+  const azalma = Math.round((1 - res.resultCount / res.total) * 100);
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-item"><div class="s-val" style="color:var(--text)">${res.total}</div><div class="s-lbl">Toplam Kayıt</div></div>
+    <div class="stat-item"><div class="s-val" style="color:#FFB300">${res.netCount}</div><div class="s-lbl">Netleştirme Temizlendi</div></div>
+    <div class="stat-item"><div class="s-val" style="color:var(--success)">${res.resultCount}</div><div class="s-lbl">Sadeleştirilmiş</div></div>
+    <div class="stat-item"><div class="s-val" style="color:var(--blue)">%${azalma}</div><div class="s-lbl">Azalma</div></div>
+  `;
+
+  document.getElementById('downloadBtn').style.display = 'block';
+}
+
+function showResultError(msg) {
+  const box = document.getElementById('resultBox');
+  box.className = 'result-box show err';
+  document.getElementById('resultTitle').textContent = '❌ Hata: ' + msg;
+  document.getElementById('netBalance').textContent = '';
+  document.getElementById('statsGrid').innerHTML = '';
+  document.getElementById('downloadBtn').style.display = 'none';
+}
+
+function downloadResult() {
+  if (!resultData) return;
+  const res = resultData;
+  const C = res.cols;
+
+  const wb = XLSX.utils.book_new();
+
+  // Sayfa 1: Sadeleştirilmiş
+  const headers = [C.TARIH, C.KYNK, C.EVRAK, C.ACIKLAMA, C.VADE, C.BORC, C.ALACAK, C.PBR, 'Satır Sayısı'];
+  const wsData  = [headers, ...res.simplified.map(r => headers.map(h => r[h] ?? ''))];
+  const ws1 = XLSX.utils.aoa_to_sheet(wsData);
+  XLSX.utils.book_append_sheet(wb, ws1, 'Sadeleştirilmiş Ekstre');
+
+  // Sayfa 2: Netleştirme
+  const nHeaders = [C.EVRAK, C.ACIKLAMA, C.TARIH, C.BORC, C.ALACAK];
+  const nData = [nHeaders, ...res.netRows.map(r => nHeaders.map(h => r[h] ?? ''))];
+  nData.push([]);
+  nData.push(['TOPLAM','','', res.netBorc.toFixed(2), res.netAlacak.toFixed(2)]);
+  nData.push(['DENGE','','', res.balanced ? '✓ DENGELİ' : '⚠️ DENGESİZ', '']);
+  const ws2 = XLSX.utils.aoa_to_sheet(nData);
+  XLSX.utils.book_append_sheet(wb, ws2, 'Netleştirme Özeti');
+
+  const fname = (workbookData.name || 'ekstre').replace(/\.(xlsx?)/i,'') + '_SADELESTIR.xlsx';
+  XLSX.writeFile(wb, fname);
+}
+
+function fmt(n) {
+  return n.toLocaleString('tr-TR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)',
+    background: type==='success' ? '#00C853' : '#FF1744',
+    color:'#000', padding:'12px 24px', borderRadius:'10px',
+    fontWeight:'700', fontSize:'13px', zIndex:'9999',
+    boxShadow:'0 4px 20px rgba(0,0,0,.4)',
+  });
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// Başlat
+init();
+</script>
+</body>
+</html>
